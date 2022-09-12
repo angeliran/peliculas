@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Login</title>
+    <style>
+        [v-cloak]{display:none;}
+    </style>
+</head>
+<body class="m-0 vh-100 row justify-content-center align-items-center " style="background-color: rgba(149, 88, 222, 1);">
+
+    <div id="app" class="col-sm-3 bg-white rounded p-5 " v-cloak>
+
+        <h1 class="text-center mb-3">Iniciar sesión</h1>
+        <div class="alert alert-danger" role="alert" v-if="error">
+            {{error}}
+        </div>
+        <form id="frmLogin" action="dashboard.html" method="POST" @submit.prevent="login">
+
+            <div class="form-group mb-4">
+              <label for="text">Usuario</label>
+              <input type="text" class="form-control" id="username" placeholder="Ingrese el correo electrónico" v-model="username" required>
+            </div>
+
+            <div class="form-group mb-4">
+              <label for="password">Contraseña</label>
+              <input type="password" class="form-control" id="password" placeholder="Ingrese la contraseña" v-model="password" required minlength="1">
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
+
+          </form>
+
+    </div>
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    users: [],
+                    error: '',
+                    username: '',
+                    password: '',
+                    flag: true,
+                }
+            },
+            methods:{
+                 async login(){
+                    this.error = '';
+
+                    var data = new FormData();
+                    data.append('username', this.username);
+                    data.append('password', this.password);
+                    data.append('request_token', '');
+
+                    var config = {
+                    method: 'post',
+                    url: 'https://api.themoviedb.org/3/authentication/token/validate_with_login?api_key=acf55829a6db4de1d6a0edb1a41c82c5',
+                    data : data
+                    };
+
+                    try {
+                        const response = await axios(config)
+                        if(response.data.success){
+                            sessionStorage.setItem("user", JSON.stringify(this.username));
+                            location.href = "index.html";
+                        }
+                    } catch (error) {
+                        this.error = "Parametros incorrectos";
+                    }
+                }
+            },
+            mounted(){
+                if(sessionStorage.user){
+                    location.href = "index.html";
+                }
+            }
+        }).mount('#app')
+    </script>
+
+</body>
+</html>

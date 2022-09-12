@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Detalle</title>
+    <style>
+        [v-cloak]{display:none;}
+        .principal{
+            margin-top: 2rem;
+        }
+        .star{
+            width: 5rem;
+            margin: 0;
+            color: rgb(218, 218, 218);
+        }
+        .star:hover{
+            cursor: pointer;
+            color: orange;
+        }
+        .activo{
+            color: orange;
+        }
+        .delete{
+            width: 5rem;
+            margin: 0;
+            color: rgb(253, 133, 133);
+        }
+        .delete:hover{
+            cursor: pointer;
+            color: red;
+        }
+    </style>
+
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="m-0 h-100 row justify-content-center align-items-center " style="background-color: rgba(149, 88, 222, 1);">
+    
+    <div id="app" class="col-sm-10  p-3 principal" v-cloak>
+        <div class="bg-white rounded p-3 mb-4 d-flex flex-row justify-content-between align-items-center">
+            <h1>{{movie[0].title}}</h1>
+            <button class="btn btn-success" @click="regresar">Regresar</button>
+        </div>
+
+        <div class="bg-white rounded p-4 table-responsive">
+            <div class="row" v-if="movie">
+            
+                <div class="card" style="width: 30rem;">
+                    <img :src="'https://image.tmdb.org/t/p/w780/'+movie[0].backdrop_path">
+                    <div class="card-body text-start">
+                        <h5>Titulo original: {{movie[0].original_title}}</h5>
+                        <h5>Titulo en español: {{movie[0].title}}</h5>
+                        <p class="card-text">{{movie[0].release_date}}</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-8">
+                    <h1 class="mb-4">{{movie[0].title}}</h1>
+                    <p>{{movie[0].overview}}</p>
+
+                    <h2 class="text-center" style="margin-top: 5rem;">Valoraciones</h2>
+                    <div class="row justify-content-center align-items-center">
+                        <span id="0" class="fa fa-times-circle fa-4x delete" @click="deleteRate()"></span>
+                        <span id="6" class="fa fa-star fa-4x star" @click="rate(6)"></span>
+                        <span id="7" class="fa fa-star fa-4x star" @click="rate(7)"></span>
+                        <span id="8" class="fa fa-star fa-4x star" @click="rate(8)"></span>
+                        <span id="9" class="fa fa-star fa-4x star" @click="rate(9)"></span>
+                        <span id="10" class="fa fa-star fa-4x star" @click="rate(10)"></span>
+                    </div>
+                </div>
+                  
+            </div>
+        
+        </div>
+
+    </div>
+
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    movie: JSON.parse(sessionStorage.getItem('movie')),
+                    user: JSON.parse(sessionStorage.getItem("user")),
+                    array_stars: [6,7,8,9,10]
+                }
+            },
+            methods:{
+                regresar(){
+                    sessionStorage.removeItem("movie");
+                    this.movie = [];
+                    location.href= "index.html";
+                },
+                rate(value){
+                        var data = JSON.stringify({
+                            "value": value
+                        });
+
+                        var config = {
+                            method: 'post',
+                            url: 'https://api.themoviedb.org/3/movie/769636/rating?api_key=acf55829a6db4de1d6a0edb1a41c82c5',
+                            headers: { 
+                                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhY2Y1NTgyOWE2ZGI0ZGUxZDZhMGVkYjFhNDFjODJjNSIsInN1YiI6IjYzMWEyNTNmNDZlNzVmMDA3ZTQxZWRhNyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.pLrXQoR7nQOKad_zDz-sOxjQkTk8NFH5GD1NNjRVZ6E', 
+                                'Content-Type': 'application/json'
+                            },
+                            data : data
+                        };
+
+                        axios(config)
+                            .then(function (response) {
+                                if(response.data.success){
+                                    Swal.fire({
+                                        position: 'top-end',
+                                        icon: 'success',
+                                        title: 'Valoración realizada',
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                    
+                                }
+                        })
+                            .catch(function (error) {
+                            console.log(error);
+                        });
+
+                        for(let i = 6; i <= 10; i++){
+                            document.getElementById(this.array_stars[i-6]).className = "fa fa-star fa-4x star";
+                        }
+                        for(let i = 6; i <= value; i++){
+                            document.getElementById(this.array_stars[i-6]).className = "fa fa-star fa-4x star activo";
+                        }
+                        
+                        
+                },
+                async deleteRate(){
+                        var config = {
+                            method: 'delete',
+                            url: 'https://api.themoviedb.org/3/movie/769636/rating?api_key=acf55829a6db4de1d6a0edb1a41c82c5',
+                            headers: { 
+                                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhY2Y1NTgyOWE2ZGI0ZGUxZDZhMGVkYjFhNDFjODJjNSIsInN1YiI6IjYzMWEyNTNmNDZlNzVmMDA3ZTQxZWRhNyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.pLrXQoR7nQOKad_zDz-sOxjQkTk8NFH5GD1NNjRVZ6E'
+                            }
+                        };
+
+                        try {
+                            const response = await axios(config)
+                            if(response.data.success){
+                                Swal.fire({
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: 'Se ha eliminado la valoración',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                                for(let i = 6; i <= 10; i++){
+                                    document.getElementById(this.array_stars[i-6]).className = "fa fa-star fa-4x star";
+                                }
+                            }
+                        } catch (error) {
+                            console.log(error);
+                        }
+
+                        
+                    
+                }
+            },
+            created(){
+                if(!sessionStorage.user || !sessionStorage.movie){
+                    location.href = "index.html";
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
