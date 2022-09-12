@@ -67,6 +67,7 @@
                     movie_detail: [],
                     user: JSON.parse(sessionStorage.getItem("user")),
                     showIndex: true,
+                    rated_movies: [],
                 }
             },
             methods:{
@@ -78,6 +79,14 @@
                 detail(id){
                     this.movie_detail = this.movies.filter(movie => movie.id === id);
                     sessionStorage.setItem('movie', JSON.stringify(this.movie_detail));
+                    
+                    let rated_movie = this.rated_movies.find(movie => movie.id == id);
+                    if(typeof rated_movie !== "undefined"){
+                        sessionStorage.setItem('rate', JSON.stringify(rated_movie));
+                    }else{
+                        sessionStorage.setItem('rate', JSON.stringify({"rating": 0}));
+                    }
+                    
                     location.href = "detail.html";
                 },
             },
@@ -101,6 +110,23 @@
                 if(!sessionStorage.user){
                     location.href= "login.html";
                 }
+            },
+            async created(){
+                var config = {
+                    method: 'get',
+                    url: 'https://api.themoviedb.org/3/account/14666425/rated/movies?api_key=acf55829a6db4de1d6a0edb1a41c82c5&language=es-MX&sort_by=created_at.asc&page=1',
+                    headers: { 
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhY2Y1NTgyOWE2ZGI0ZGUxZDZhMGVkYjFhNDFjODJjNSIsInN1YiI6IjYzMWEyNTNmNDZlNzVmMDA3ZTQxZWRhNyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.pLrXQoR7nQOKad_zDz-sOxjQkTk8NFH5GD1NNjRVZ6E'
+                    }
+                };
+                var self = this;
+                await axios(config)
+                    .then(function (response) {
+                        self.rated_movies = JSON.stringify(response.data.results)
+                        self.rated_movies = JSON.parse(self.rated_movies);
+                    })
+                .catch(function (error) {
+                });
             },
         }).mount('#app')
     </script>
